@@ -15,7 +15,7 @@ def process_sentence(sentence):
 	value = sentence[4]
 	checksum = sentence[5]
 
-	if sender in config.SENTENCE_CONTROLLER:
+	if sender in config.SENTENCE_SYSTEM:
 		# Only process sentences originating from controller
 		print ("Gut: "+sentence.hex(), flush=True)
 
