@@ -3,12 +3,27 @@
 import serial
 import config
 import time
-import sys
 
 port = serial.Serial(config.SERIAL_PORT, baudrate=9600)
 
 def read_byte():
 	return port.read()
+
+def process_measurement(identifier, value):
+	iso = time.ctime()
+	data = [
+	{
+		"measurement": config.MEASUREMENT_ID,
+			"tags": {
+				"location": config.LOCATION_ID
+			},
+			"time": iso,
+			"fields": {
+				identifier: value
+			}
+	}	
+	]
+	print (data)
 
 def process_sentence(sentence):
 	sender = sentence[1]
@@ -21,21 +36,12 @@ def process_sentence(sentence):
 		# Only process sentences originating from controller
 		# print ("Gut: "+sentence.hex(), flush=True)
 
-		if valuetype in config.TYPE_TEMP_OUTSIDE:
-			print ("Outside Temperature: " + str(config.TEMP_LOOKUP[value]) + "°C")
-			print (str(time.time())+";OUTSIDE;"+str(config.TEMP_LOOKUP[value]))
-		elif valuetype in config.TYPE_TEMP_INSIDE:
-			print ("Inside Temperature: " + str(config.TEMP_LOOKUP[value]) + "°C")
-			print (str(time.time())+";INSIDE;"+str(config.TEMP_LOOKUP[value]))
-		elif valuetype in config.TYPE_TEMP_EXHAUST:
-			print ("Exhaust Temperature: " + str(config.TEMP_LOOKUP[value]) + "°C")
-			print (str(time.time())+";EXHAUST;"+str(config.TEMP_LOOKUP[value]))
-		elif valuetype in config.TYPE_TEMP_INCOMING:
-			print ("Incoming Temperature: " + str(config.TEMP_LOOKUP[value]) + "°C")
-			print (str(time.time())+";INCOMING;"+str(config.TEMP_LOOKUP[value]))
-		elif valuetype in config.TYPE_FANSPEED:
-			print ("Fan speed: " + str(value))
-			print (str(time.time())+";FANSPEED;"+str(value))
+		if valuetype in config.TEMP_IDENTIFIERS:
+			process_measurement(config.TEMP_IDENTIFIERS[valuetype], config.TEMP_LOOKUP[value])
+			#print (str(time.ctime())+";"+config.TEMP_IDENTIFIERS[valuetype]+";"+str(config.TEMP_LOOKUP[value]))
+		elif valuetype == config.TYPE_FANSPEED:
+			process_measurement("FANSPEED", value)
+			#print (str(time.ctime())+";FANSPEED;"+str(value))
 
 
 sentence = bytearray()
