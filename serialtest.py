@@ -2,6 +2,8 @@
 
 import serial
 import config
+import time
+import sys
 
 port = serial.Serial(config.SERIAL_PORT, baudrate=9600)
 
@@ -11,13 +13,29 @@ def read_byte():
 def process_sentence(sentence):
 	sender = sentence[1]
 	recipient = sentence[2]
-	type = sentence[3]
+	valuetype = sentence[3]
 	value = sentence[4]
 	checksum = sentence[5]
 
 	if sender in config.SENTENCE_SYSTEM:
 		# Only process sentences originating from controller
-		print ("Gut: "+sentence.hex(), flush=True)
+		# print ("Gut: "+sentence.hex(), flush=True)
+
+		if valuetype in config.TYPE_TEMP_OUTSIDE:
+			print ("Outside Temperature: " + str(config.TEMP_LOOKUP[value]) + "°C")
+			print (str(time.time())+";OUTSIDE;"+str(config.TEMP_LOOKUP[value]))
+		elif valuetype in config.TYPE_TEMP_INSIDE:
+			print ("Inside Temperature: " + str(config.TEMP_LOOKUP[value]) + "°C")
+			print (str(time.time())+";INSIDE;"+str(config.TEMP_LOOKUP[value]))
+		elif valuetype in config.TYPE_TEMP_EXHAUST:
+			print ("Exhaust Temperature: " + str(config.TEMP_LOOKUP[value]) + "°C")
+			print (str(time.time())+";EXHAUST;"+str(config.TEMP_LOOKUP[value]))
+		elif valuetype in config.TYPE_TEMP_INCOMING:
+			print ("Incoming Temperature: " + str(config.TEMP_LOOKUP[value]) + "°C")
+			print (str(time.time())+";INCOMING;"+str(config.TEMP_LOOKUP[value]))
+		elif valuetype in config.TYPE_FANSPEED:
+			print ("Fan speed: " + str(value))
+			print (str(time.time())+";FANSPEED;"+str(value))
 
 
 sentence = bytearray()
